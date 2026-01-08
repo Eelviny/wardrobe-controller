@@ -1,0 +1,314 @@
+esphome:
+  name: wardrobe
+  friendly_name: Wardrobe
+  platformio_options:
+    board_build.flash_mode: dio
+    build_flags: "-DI2C_NUM_1=I2C_NUM_0"
+  on_boot:
+    then:
+      - light.control:
+          id: light_1
+          state: off
+          brightness: 80%
+      - light.control:
+          id: light_2
+          state: off
+          brightness: 80%
+      - light.control:
+          id: light_3
+          state: off
+          brightness: 80%
+      - light.control:
+          id: light_4
+          state: off
+          brightness: 80%
+
+esp32:
+  board: esp32-c6-devkitc-1
+  variant: ESP32C6
+  flash_size: 4MB
+  framework:
+    type: esp-idf
+i2c:
+  scan: false
+  sda: GPIO22
+  scl: GPIO23
+  frequency: 400kHz
+
+pca9554:
+  - id: "pca9554a_device"
+
+# Enable logging
+# logger:
+#   hardware_uart: USB_SERIAL_JTAG
+
+api:
+  reboot_timeout: 8h
+  encryption:
+    key: !secret encryption_key
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# esp32_improv:
+#   authorizer: none
+#   identify_duration: 30s
+
+network:
+  enable_ipv6: true
+
+sensor:
+  - platform: uptime
+    name: Uptime
+    id: uptime_sensor
+  - platform: wifi_signal
+    name: Signal Strength
+    id: wifi_sensor
+
+button:
+  - platform: restart
+    name: Restart
+  - platform: safe_mode
+    name: Restart (Safe Mode)
+
+switch:
+  - platform: template
+    id: door_activation
+    name: Door Open Activation
+    optimistic: true
+    icon: mdi:lightbulb-auto
+    restore_mode: RESTORE_DEFAULT_ON
+
+output:
+  - platform: ledc
+    id: warm_white_output_3
+    frequency: 9765Hz
+    pin:
+      number: GPIO15
+  # - platform: ledc
+  #   id: cold_white_output_3
+  #   frequency: 9765Hz
+  #   pin:
+  #     number: GPIO14
+  - platform: gpio
+    id: cold_white_output_3
+    pin:
+      number: GPIO14
+  - platform: ledc
+    id: warm_white_output_4
+    frequency: 9765Hz
+    phase_angle: 90
+    pin:
+      number: GPIO7
+  - platform: gpio
+    id: cold_white_output_4
+    pin:
+      number: GPIO6
+  # - platform: ledc
+  #   id: cold_white_output_4
+  #   frequency: 9765Hz
+  #   pin:
+  #     number: GPIO6
+  - platform: ledc
+    id: warm_white_output_5
+    frequency: 9765Hz
+    phase_angle: 180
+    pin:
+      number: GPIO5
+  - platform: gpio
+    id: cold_white_output_5
+    pin:
+      number: GPIO4
+  # - platform: ledc
+  #   id: cold_white_output_5
+  #   frequency: 9765Hz
+  #   pin:
+  #     number: GPIO4
+  - platform: ledc
+    id: warm_white_output_6
+    frequency: 9765Hz
+    phase_angle: 270
+    pin:
+      number: GPIO17
+  - platform: gpio
+    id: cold_white_output_6
+    pin:
+      number: GPIO16
+  # - platform: ledc
+  #   id: cold_white_output_6
+  #   frequency: 9765Hz
+  #   pin:
+  #     number: GPIO16
+
+light:
+  # - platform: esp32_rmt_led_strip
+  #   rgb_order: RGB
+  #   pin: GPIO8
+  #   num_leds: 1
+  #   chipset: ws2812
+  #   name: "Status LED"
+  #   default_transition_length: 0s
+  #   disabled_by_default: true
+  # - platform: cwww
+  #   id: light_1
+  #   name: Light 1
+  #   warm_white: warm_white_output_3
+  #   cold_white: cold_white_output_3
+  #   cold_white_color_temperature: 6500 K
+  #   warm_white_color_temperature: 2700 K
+  # - platform: cwww
+  #   id: light_2
+  #   name: Light 2
+  #   warm_white: warm_white_output_4
+  #   cold_white: cold_white_output_4
+  #   cold_white_color_temperature: 6500 K
+  #   warm_white_color_temperature: 2700 K
+  # - platform: cwww
+  #   id: light_3
+  #   name: Light 3
+  #   warm_white: warm_white_output_5
+  #   cold_white: cold_white_output_5
+  #   cold_white_color_temperature: 6500 K
+  #   warm_white_color_temperature: 2700 K
+  # - platform: cwww
+  #   id: light_4
+  #   name: Light 4
+  #   warm_white: warm_white_output_6
+  #   cold_white: cold_white_output_6
+  #   cold_white_color_temperature: 6500 K
+  #   warm_white_color_temperature: 2700 K
+  - platform: monochromatic
+    name: Light 1
+    id: light_1
+    output: warm_white_output_3
+    restore_mode: ALWAYS_OFF
+  - platform: monochromatic
+    name: Light 2
+    id: light_2
+    output: warm_white_output_4
+    restore_mode: ALWAYS_OFF
+  - platform: monochromatic
+    name: Light 3
+    id: light_3
+    output: warm_white_output_5
+    restore_mode: ALWAYS_OFF
+  - platform: monochromatic
+    name: Light 4
+    id: light_4
+    output: warm_white_output_6
+    restore_mode: ALWAYS_OFF
+  - platform: binary
+    id: light_1_cold
+    output: cold_white_output_3
+    restore_mode: ALWAYS_OFF
+  - platform: binary
+    id: light_2_cold
+    output: cold_white_output_4
+    restore_mode: ALWAYS_OFF
+  - platform: binary
+    id: light_3_cold
+    output: cold_white_output_5
+    restore_mode: ALWAYS_OFF
+  - platform: binary
+    id: light_4_cold
+    output: cold_white_output_6
+    restore_mode: ALWAYS_OFF
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO1
+      mode:
+        input: true
+        pulldown: true
+    id: door_1
+    filters:
+      - delayed_on_off: 20ms
+    on_press:
+      - if:
+          condition:
+            switch.is_on: door_activation
+          then:
+            - light.turn_off:
+                id: light_1
+    on_release:
+      - if:
+          condition:
+            switch.is_on: door_activation
+          then:
+            - light.turn_on:
+                id: light_1
+  - platform: gpio
+    pin:
+      number: GPIO2
+      mode:
+        input: true
+        pulldown: true
+    id: door_2
+    filters:
+      - delayed_on_off: 20ms
+    on_press:
+      - if:
+          condition:
+            switch.is_on: door_activation
+          then:
+            - light.turn_off:
+                id: light_2
+    on_release:
+      - if:
+          condition:
+            switch.is_on: door_activation
+          then:
+            - light.turn_on:
+                id: light_2
+  - platform: gpio
+    pin:
+      number: GPIO3
+      mode:
+        input: true
+        pulldown: true
+    id: door_3
+    filters:
+      - delayed_on_off: 20ms
+    on_press:
+      - if:
+          condition:
+            switch.is_on: door_activation
+          then:
+            - light.turn_off:
+                id: light_3
+    on_release:
+      - if:
+          condition:
+            switch.is_on: door_activation
+          then:
+            - light.turn_on:
+                id: light_3
+  - platform: gpio
+    pin:
+      pca9554: pca9554a_device
+      number: 0
+      mode:
+        input: true
+      inverted: true
+    id: door_4
+    filters:
+      - delayed_on_off: 20ms
+    on_press:
+      - if:
+          condition:
+            switch.is_on: door_activation
+          then:
+            - light.turn_off:
+                id: light_4
+    on_release:
+      - if:
+          condition:
+            switch.is_on: door_activation
+          then:
+            - light.turn_on:
+                id: light_4
